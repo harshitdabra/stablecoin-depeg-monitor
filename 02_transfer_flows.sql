@@ -1,37 +1,14 @@
 SELECT
-    DATE_TRUNC('day', block_time) AS day,
-    symbol AS stablecoin,
-    COUNT(*) AS transfer_count,
-    SUM(amount_usd) AS volume_usd,
-    AVG(SUM(amount_usd)) OVER (
-        PARTITION BY symbol
-        ORDER BY DATE_TRUNC('day', block_time)
-        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-    ) AS rolling_7d_avg_volume
-FROM tokens_ethereum.transfers
+    DATE_TRUNC('day', evt_block_time) AS day,
+    contract_address,
+    SUM(CAST(value AS DOUBLE) / 1e6) AS transfer_volume_usd,
+    COUNT(*) AS num_transfers
+FROM erc20_ethereum.evt_Transfer
 WHERE
-    symbol IN ('USDC', 'USDT')
-    AND block_time >= NOW() - INTERVAL '30' DAY
-    AND amount_usd > 0
+    contract_address IN (
+        0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,
+        0xdac17f958d2ee523a2206206994597c13d831ec7
+    )
+    AND evt_block_time >= NOW() - INTERVAL '30' DAY
 GROUP BY 1, 2
-ORDER BY 1 DESC, 2-- Query 2: USDC/USDT Transfer Flows - Ethereum (30d)
--- Source: tokens_ethereum.transfers (Dune Spellbook)
--- Dashboard: https://dune.com/harshit_dabra/stablecoin-depeg-monitor
-
-SELECT
-    DATE_TRUNC('day', block_time) AS day,
-    symbol AS stablecoin,
-    COUNT(*) AS transfer_count,
-    SUM(amount_usd) AS volume_usd,
-    AVG(SUM(amount_usd)) OVER (
-        PARTITION BY symbol
-        ORDER BY DATE_TRUNC('day', block_time)
-        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-    ) AS rolling_7d_avg_volume
-FROM tokens_ethereum.transfers
-WHERE
-    symbol IN ('USDC', 'USDT')
-    AND block_time >= NOW() - INTERVAL '30' DAY
-    AND amount_usd > 0
-GROUP BY 1, 2
-ORDER BY 1 DESC, 2
+ORDER BY 1 DESC, 3 DESC
