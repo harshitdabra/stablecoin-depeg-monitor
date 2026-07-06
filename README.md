@@ -1,38 +1,19 @@
 # stablecoin-depeg-monitor
 
-Tracks USDC and USDT price movements and on-chain flows during market stress events. Built on Dune Analytics using Ethereum data.
+Tracks how far USDC and USDT drift from their dollar peg, and what's happening with on-chain transfer flows during periods of market stress. Built on Dune Analytics using Ethereum data.
 
-**Dashboard:** https://dune.com/harshit_dabra/stablecoin-depeg-monitor
+Dashboard: https://dune.com/harshit_dabra/stablecoin-depeg-monitor
 
----
+## What it tracks
 
-## What this tracks
-
-- How far USDC and USDT drift from $1 on a daily basis over 90 days
-- Transfer volume on Ethereum — spikes here usually coincide with panic or uncertainty
-- Specific hours where either coin moved more than 0.1% off peg
-- 90-day summary: worst depeg, min/max price, and total hours spent off-peg
+Daily average price of both coins against the $1 target over a 90 day window, transfer volume on Ethereum (spikes here usually line up with panic or uncertainty), the specific hours where either coin moved more than 0.1% off peg, and a 90 day summary of the worst depeg, price range, and total hours spent off peg.
 
 ## Queries
 
-| File | What it does |
-|------|-------------|
-| `01_price_vs_peg.sql` | Daily avg price for USDC & USDT vs the $1 target |
-| `02_transfer_flows.sql` | Daily transfer volume + 7-day rolling average on Ethereum |
-| `03_depeg_events.sql` | Filters hourly candles where deviation exceeded 0.1% |
-| `04_summary_stats.sql` | Worst depeg %, price range, depeg hours — per coin |
+`01_price_vs_peg.sql` compares daily average price against the target. `02_transfer_flows.sql` tracks daily transfer volume with a 7 day rolling average. `03_depeg_events.sql` filters hourly candles where the deviation crossed 0.1%. `04_summary_stats.sql` rolls all of that up into worst depeg percentage, price range and total depeg hours per coin.
 
-Dune links: [7722736](https://dune.com/queries/7722736) · [7722746](https://dune.com/queries/7722746) · [7722756](https://dune.com/queries/7722756) · [7722766](https://dune.com/queries/7722766)
+Pulls from `prices.usd` and `tokens_ethereum.transfers` in Dune's spellbook.
 
-## Tables used
+Over the last 90 days, USDT had a slightly wider worst depeg (around 0.32%) compared to USDC (around 0.23%), though both spent most of the window within 0.1% of a dollar. Transfer volume spiked noticeably in late May.
 
-- `prices.usd` — minute-level prices from Dune's spellbook
-- `tokens_ethereum.transfers` — ERC-20 transfer data on Ethereum
-
-## Key numbers (last 90 days)
-
-USDT had a slightly wider worst depeg (~0.32%) vs USDC (~0.23%). Both spent most of the window within 0.1% of $1. Transfer volume showed a clear spike in late May.
-
-## Running locally
-
-Copy any `.sql` file into the Dune query editor at https://dune.com/queries/new and hit run. No setup needed.
+To run any of it, just paste the SQL into a new query at dune.com/queries/new and hit run, no setup needed.
